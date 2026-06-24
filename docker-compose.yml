@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URI=mongodb://mongo:27017/url-shortener
+      - PORT=3000
+    depends_on:
+      - redis
+      - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - url-shortener-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - url-shortener-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo:
+    image: mongo:6.0-alpine
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=url-shortener
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - url-shortener-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+  mongo-data:
+
+networks:
+  url-shortener-network:
+    driver: bridge
