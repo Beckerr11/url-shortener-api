@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,3 +27,9 @@ jobs:
 
       - name: Run tests
         run: npm test -- --runInBand
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build production Docker image
+        run: docker build -t url-shortener-api:ci .
