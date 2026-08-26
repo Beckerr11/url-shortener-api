@@ -1,70 +1,74 @@
-# URL Shortener API
+# URL Shortener API — Functional Demo
 
-Um serviço de encurtamento de URLs de alta performance construído com **Node.js**, **Express**, **MongoDB** e **Redis**. Demonstra conhecimento em caching, analytics e escalabilidade.
+[![CI](https://github.com/Beckerr11/url-shortener-api/actions/workflows/ci.yml/badge.svg)](https://github.com/Beckerr11/url-shortener-api/actions/workflows/ci.yml)
 
-## 🎯 Características
+API demonstrativa de encurtamento de URLs com **validação, aliases personalizados, redirecionamento e analytics básicos**.
 
-- ✅ **Encurtamento de URLs** com slugs únicos
-- ✅ **Redirecionamento rápido** com cache em Redis
-- ✅ **Analytics em tempo real** (cliques, referrers, geolocalização básica)
-- ✅ **Geração de QR Code** para cada link encurtado
-- ✅ **Slugs customizados** definidos pelo usuário
-- ✅ **Expiração automática** de links (TTL)
-- ✅ **Rate Limiting** para segurança da API
+> O snapshot público atual usa armazenamento **em memória** para manter os testes reproduzíveis e não depender de serviços externos. MongoDB, Redis, QR Code e rate limiting fazem parte da evolução planejada e não são apresentados aqui como recursos já concluídos.
 
-## 🚀 Stack Tecnológico
+## Funcionalidades verificáveis
 
-| Camada | Tecnologia |
-|--------|-----------|
-| **Runtime** | Node.js 18+ |
-| **Framework** | Express.js |
-| **Banco de Dados** | MongoDB (Persistência) |
-| **Cache** | Redis (Performance de Redirecionamento) |
-| **QR Code** | qrcode library |
-| **Validação** | express-validator |
+- `POST /api/shorten` cria uma URL curta;
+- valida apenas URLs HTTP/HTTPS;
+- suporta alias personalizado;
+- rejeita aliases duplicados com `409`;
+- `GET /:shortCode` redireciona com `301`;
+- registra contagem de cliques em memória;
+- `GET /api/stats/:shortCode` retorna analytics básicos;
+- `GET /health` expõe um health check simples.
 
-## 🏗️ Arquitetura e Performance
+## Stack atual
 
-Este projeto foi desenhado para suportar alta carga de redirecionamentos:
+- Node.js
+- Express
+- Jest
+- Supertest
+- Babel
+- GitHub Actions
 
-1. **Escrita:** Quando uma URL é encurtada, ela é salva no MongoDB.
-2. **Leitura (Redirecionamento):** O sistema primeiro checa o Redis. Se estiver no cache, o redirecionamento ocorre em milissegundos. Se não, busca no MongoDB e popula o cache.
-3. **Analytics:** Cliques são registrados de forma assíncrona para não atrasar o redirecionamento do usuário.
+## Testes
 
-## 📋 Instalação
+A suíte cobre os principais fluxos HTTP da API:
 
 ```bash
-# Clone o repositório
-git clone https://github.com/Beckerr11/url-shortener-api.git
-cd url-shortener-api
-
-# Instale as dependências
-npm install
-
-# Configure as variáveis de ambiente (.env)
-cp .env.example .env
-
-# Inicie o servidor
-npm start
+npm ci
+npm test
 ```
 
-## 📚 Endpoints Principais
+Os testes validam criação, URL inválida, conflito de alias, redirecionamento, `404` e analytics.
 
-### Encurtar URL
-`POST /api/v1/shorten`
-```json
-{
-  "originalUrl": "https://www.google.com/search?q=como+ser+um+dev+melhor",
-  "customSlug": "dev-tips"
-}
+## Arquitetura atual
+
+```text
+HTTP request
+    ↓
+Express API
+    ↓
+validation + routing
+    ↓
+in-memory link store
+    ↓
+redirect / stats response
 ```
 
-### Analytics
-`GET /api/v1/analytics/:slug`
-Retorna estatísticas detalhadas de acessos.
+Essa implementação funciona como uma referência pequena e testável. A próxima evolução natural é trocar o armazenamento em memória por adapters persistentes sem alterar o contrato HTTP.
 
-## 👨‍💻 Autor
+## Roadmap técnico
 
-**Douglas Silva** — Desenvolvedor Full Stack Júnior  
-📧 douglasaparecidodasilva@gmail.com  
-🔗 [GitHub](https://github.com/Beckerr11) | [Portfolio](https://douglasdev.tech)
+- persistência em MongoDB;
+- cache de redirecionamento em Redis;
+- rate limiting;
+- geração de QR Code;
+- métricas e observabilidade;
+- containerização validada em CI;
+- deploy público.
+
+## Qualidade e manutenção
+
+- CI executa a suíte Jest em pull requests e pushes;
+- Dependabot acompanha atualizações npm semanalmente;
+- dependências e arquivos gerados não devem ser versionados.
+
+## Escopo
+
+Este repositório é um **projeto de portfólio**. O README descreve somente o comportamento verificável no código atual; itens futuros ficam explicitamente separados no roadmap.
