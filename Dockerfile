@@ -1,43 +1,21 @@
-# Build stage
-FROM node:18-alpine AS builder
+FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Install dependencies
-RUN npm ci --only=production
+COPY src ./src
 
-# Production stage
-FROM node:18-alpine
+ENV NODE_ENV=production
+ENV PORT=3000
 
-WORKDIR /app
-
-# Install dumb-init
-RUN apk add --no-cache dumb-init
-
-# Copy node_modules from builder
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy application code
-COPY . .
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
+RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
 USER nodejs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD node -e "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
-# Use dumb-init
-ENTRYPOINT ["dumb-init", "--"]
-
-# Start application
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]
