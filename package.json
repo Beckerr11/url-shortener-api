@@ -1,25 +1,28 @@
 {
   "name": "url-shortener-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "main": "src/server.js",
   "scripts": {
+    "start": "node src/server.js",
     "test": "jest --forceExit",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --forceExit",
     "docker:build": "docker build -t url-shortener-api .",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "url-shortener",
+    "express",
+    "api",
+    "jest",
+    "supertest"
+  ],
   "license": "ISC",
-  "description": "",
+  "description": "Functional URL shortener API demo with validation, aliases, redirects, basic analytics, tests and Docker.",
   "dependencies": {
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "mongoose": "^9.7.2",
-    "qrcode": "^1.5.4",
-    "redis": "^6.0.0"
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.29.7",
